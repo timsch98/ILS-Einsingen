@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Alarm Monitor</title>
+    <style>
+        body.monitor {
+            background: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin: 1rem 0;
+        }
+
+        #monitorEinsaetze {
+            width: 100%;
+            max-width: 1200px;
+            padding: 1em;
+            box-sizing: border-box;
+        }
+
+        .einsatzAnzeige {
+            background: #cc1414;
+            color: white;
+            padding: 2em;
+            border-radius: 12px;
+            font-size: 2em;
+            margin-bottom: 1em;
+            box-shadow: 0 0 20px red;
+            text-align: center;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 10px red; }
+            50% { box-shadow: 0 0 25px red; }
+            100% { box-shadow: 0 0 10px red; }
+        }
+
+        #startButton {
+            font-size: 1.5em;
+            padding: 1em 2em;
+            margin-top: 2em;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="monitor">
+    <h1>📟 Alarm Monitor</h1>
+    <button id="startButton">Monitor starten</button>
+    <div id="monitorEinsaetze" style="display: none;"></div>
+    <audio id="gongAudio" src="gong.mp3" preload="auto"></audio>
+
+    <script>
+        const gemeldeteEinsaetze = new Set();
+
+        function getAktiveEinsaetzeMitStatus() {
+            const einsaetze = JSON.parse(localStorage.getItem("einsaetze")) || [];
+            return einsaetze.filter(einsatz =>
+                Array.isArray(einsatz.fahrzeuge) &&
+                einsatz.fahrzeuge.some(f => f.status && f.status.trim() !== "")
+            );
+        }
+
+        function hashEinsatz(einsatz) {
+            return JSON.stringify({
+                ort: einsatz.ort,
+                strasse: einsatz.strasse,
+                hausnummer: einsatz.hausnummer,
+                plz: einsatz.plz,
+                beschreibung: einsatz.beschreibung,
+                fahrzeuge: einsatz.fahrzeuge.map(f => `${f.name}-${f.status}`).sort()
+            });
+        }
+
+        function renderMonitor() {
+            const container = document.getElementById("monitorEinsaetze");
+            container.innerHTML = "";
+
+            const aktive = getAktiveEinsaetzeMitStatus();
+            if (aktive.length === 0) {
+                container.innerHTML = "<p style='color: gray; font-size: 1.5em;'>Keine aktiven Einsätze mit Status</p>";
+                gemeldeteEinsaetze.clear();
+                return;
+            }
+
+            aktive.forEach(e => {
+                const fahrzeugListe = e.fahrzeuge
+                    .map(f => `${f.name}`)
+                    .join("<br>");
+
+                const div = document.createElement("div");
+                div.className = "einsatzAnzeige";
+                div.innerHTML = ` 
+                    <strong>Adresse: ${e.strasse} ${e.hausnummer}, ${e.plz}, ${e.ort}</strong><br><br>
+                    <strong>Beschreibung:</strong><br>
+                    ${e.beschreibung}<br><br>
+                    <div style="font-size: 0.8em">${fahrzeugListe}</div>
+                `;
+                container.appendChild(div);
+
+                const einsatzHash = hashEinsatz(e);
+                if (!gemeldeteEinsaetze.has(einsatzHash)) {
+                    gemeldeteEinsaetze.add(einsatzHash);
+                    playGongAndAnnounce(e);
+                }
+            });
+        }
+
+        function playGongAndAnnounce(einsatz) {
+            const gongAudio = document.getElementById("gongAudio");
+            if (gongAudio.readyState >= 3) {
+                gongAudio.play().catch(error => {
+                    console.error("Fehler beim Abspielen des Gongs:", error);
+                });
+
+                gongAudio.onended = function () {
+                    announceEinsatz(einsatz);
+                };
+            } else {
+                announceEinsatz(einsatz);
+            }
+        }
+
+        function announceEinsatz(einsatz) {
+            if (!('speechSynthesis' in window)) {
+                console.error("Text-to-Speech wird nicht unterstützt.");
+                return;
+            }
+
+            const ausrueckendeFahrzeuge = einsatz.fahrzeuge
+                .map(f => f.name) // Nennen der Fahrzeugnamen ohne Status
+                .join(", ");
+
+            let text = `Achtung! Neuer Einsatz in ${einsatz.ort}, ${einsatz.strasse} ${einsatz.hausnummer}, ${einsatz.plz}. Beschreibung: ${einsatz.beschreibung}.`;
+
+            if (ausrueckendeFahrzeuge) {
+                text += ` Folgende Fahrzeuge rücken aus: ${ausrueckendeFahrzeuge}.`;
+            }
+
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'de-DE';
+            window.speechSynthesis.speak(msg);
+        }
+
+        document.getElementById("startButton").addEventListener("click", () => {
+            const gongAudio = document.getElementById("gongAudio");
+            gongAudio.play().catch(() => {});
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance("Start"));
+
+            document.getElementById("startButton").style.display = "none";
+            document.getElementById("monitorEinsaetze").style.display = "block";
+
+            renderMonitor();
+            setInterval(renderMonitor, 3000);
+        });
+
+        // Optionaler Testeinsatz:
+        // setTimeout(() => {
+        //     const neuerEinsatz = {
+        //         ort: "Berlin",
+        //         strasse: "Nebenstraße",
+        //         hausnummer: "42",
+        //         plz: "10715",
+        //         beschreibung: "Verkehrsunfall mit Personenschaden",
+        //         fahrzeuge: [
+        //             { name: "HLF 20", status: "" },
+        //             { name: "RTW 1", status: "" }
+        //         ]
+        //     };
+        //     const einsaetze = JSON.parse(localStorage.getItem("einsaetze")) || [];
+        //     einsaetze.push(neuerEinsatz);
+        //     localStorage.setItem("einsaetze", JSON.stringify(einsaetze));
+        // }, 5000);
+    </script>
+</body>
+</html>
