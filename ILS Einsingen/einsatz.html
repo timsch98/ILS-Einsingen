@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Einsätze</title>
+  <style>
+    /* Dein bestehendes CSS bleibt unverändert */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #cc1414;
+      color: white;
+      padding: 1em;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.6em;
+    }
+
+    nav {
+      margin-top: 20px;
+    }
+
+    nav a {
+      background-color: #ff6600;
+      color: white;
+      padding: 10px 18px;
+      margin: 0 10px;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 5px;
+      font-size: 0.9em;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+
+    nav a:hover {
+      background-color: #e65c00;
+      transform: translateY(-2px);
+    }
+
+    .einsatz-form, .einsatzliste {
+      background: white;
+      padding: 1em;
+      border-radius: 8px;
+      margin: 1em auto;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      max-width: 800px;
+    }
+
+    .einsatz-form input, .einsatz-form textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+
+    .einsatz-form button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .einsatz-form button:hover {
+      background-color: #45a049;
+    }
+
+    .einsatzliste {
+      max-width: 800px;
+      margin: 2em auto;
+    }
+
+    .einsatz {
+      background-color: white;
+      padding: 1em;
+      margin-bottom: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .einsatz button {
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px 5px 0 0;
+    }
+
+    .einsatz button:hover {
+      opacity: 0.9;
+    }
+
+    .delete-button {
+      background-color: #b30000;
+      color: white;
+    }
+
+    .delete-button:hover {
+      background-color: #990000;
+    }
+
+    #successMessage {
+      display: none;
+      background-color: #ff6600;
+      color: white;
+      padding: 10px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .fahrzeug-abziehen-btn {
+      background-color: #fc0606;
+      color: white;
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+
+    .fahrzeug-abziehen-btn:hover {
+      background-color: #990000;
+    }
+
+    .action-button {
+      background-color: #ff6600;
+      color: white;
+      border: none;
+    }
+
+    .action-button:hover {
+      background-color: #e65c00;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🚨 Einsätze</h1>
+    <nav>
+      <a href="index.html">🏠 Startseite</a>
+      <a href="historie.html">📜 Historie</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="message" id="successMessage">Einsatz wurde erfolgreich erstellt.</div>
+
+    <div class="einsatz-form">
+      <h2>Neuen Einsatz erstellen</h2>
+      <input type="text" id="einsatzOrt" placeholder="Ort" required />
+      <input type="text" id="einsatzStraße" placeholder="Straße" required />
+      <input type="text" id="einsatzHausnummer" placeholder="Hausnummer" required />
+      <input type="text" id="einsatzPlz" placeholder="PLZ" required />
+      <textarea id="einsatzBeschreibung" placeholder="Beschreibung des Einsatzes" required></textarea>
+
+      <div id="fahrzeugCheckboxen">
+        <h4>Fahrzeuge zuordnen:</h4>
+        <!-- Dynamisch befüllt -->
+      </div>
+
+      <button id="einsatzErstellenBtn">Einsatz erstellen</button>
+    </div>
+
+    <div class="einsatzliste">
+      <h2>Aktuelle Einsätze</h2>
+      <div id="einsaetze"></div>
+    </div>
+
+  </main>
+
+  <script>
+    let einsaetze = JSON.parse(localStorage.getItem("einsaetze")) || [];
+    let historie = JSON.parse(localStorage.getItem("historie")) || [];
+    let fahrzeugeDaten = JSON.parse(localStorage.getItem("fahrzeugeDaten")) || [];
+
+    function save() {
+      localStorage.setItem("einsaetze", JSON.stringify(einsaetze));
+      localStorage.setItem("historie", JSON.stringify(historie));
+      localStorage.setItem("fahrzeugeDaten", JSON.stringify(fahrzeugeDaten));
+    }
+
+    function showSuccess(message) {
+      const msgDiv = document.getElementById("successMessage");
+      msgDiv.textContent = message;
+      msgDiv.style.display = "block";
+      setTimeout(() => msgDiv.style.display = "none", 3000);
+    }
+
+    function addEinsatz() {
+      const ort = document.getElementById("einsatzOrt").value.trim();
+      const straße = document.getElementById("einsatzStraße").value.trim();
+      const hausnummer = document.getElementById("einsatzHausnummer").value.trim();
+      const plz = document.getElementById("einsatzPlz").value.trim();
+      const beschreibung = document.getElementById("einsatzBeschreibung").value.trim();
+
+      if (!ort || !straße || !hausnummer || !plz || !beschreibung) {
+        alert("Bitte alle Felder ausfüllen.");
+        return;
+      }
+
+      const fahrzeugeCheckboxes = document.querySelectorAll("#fahrzeugCheckboxen input[type='checkbox']:checked");
+      const zugewieseneFahrzeuge = Array.from(fahrzeugeCheckboxes).map(cb => ({
+        name: cb.value,
+        status: "Zugewiesen"
+      }));
+
+      const einsatz = {
+        id: Date.now(),
+        ort,
+        strasse: straße,
+        hausnummer,
+        plz,
+        zeit: new Date().toISOString(),
+        beschreibung,
+        fahrzeuge: zugewieseneFahrzeuge
+      };
+
+      einsaetze.push(einsatz);
+      save();
+      renderEinsaetze();
+      renderFahrzeugCheckboxen();
+      showSuccess("Einsatz wurde erfolgreich erstellt.");
+
+      document.getElementById("einsatzOrt").value = "";
+      document.getElementById("einsatzStraße").value = "";
+      document.getElementById("einsatzHausnummer").value = "";
+      document.getElementById("einsatzPlz").value = "";
+      document.getElementById("einsatzBeschreibung").value = "";
+      document.getElementById("einsatzOrt").focus();
+    }
+
+    function renderFahrzeugCheckboxen() {
+      const container = document.getElementById("fahrzeugCheckboxen");
+      container.innerHTML = "<h4>Fahrzeuge zuordnen:</h4>";
+
+      fahrzeugeDaten.forEach(f => {
+        const used = einsaetze.some(e => e.fahrzeuge.some(fz => fz.name === f.name));
+        if (!used) {
+          const label = document.createElement("label");
+          label.style.display = "block";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.value = f.name;
+          label.appendChild(checkbox);
+          label.appendChild(document.createTextNode(" " + f.name));
+          container.appendChild(label);
+        }
+      });
+    }
+
+    function renderEinsaetze() {
+      const container = document.getElementById("einsaetze");
+      container.innerHTML = "";
+
+      if (einsaetze.length === 0) {
+        container.innerHTML = "<p>Es gibt keine laufenden Einsätze.</p>";
+        return;
+      }
+
+      einsaetze.forEach(e => {
+        const div = document.createElement("div");
+        div.className = "einsatz";
+
+        const fahrzeugListe = e.fahrzeuge.length > 0
+          ? e.fahrzeuge.map(f => `
+              - ${f.name} (${f.status})
+              <button class="fahrzeug-abziehen-btn" onclick="fahrzeugAbziehen(${e.id}, '${f.name}')">
+                Fahrzeug abziehen
+              </button>
+            `).join("<br>")
+          : "Kein Fahrzeug zugewiesen";
+
+        div.innerHTML = `
+          <strong>${e.ort} ${e.strasse} ${e.hausnummer}, ${e.plz}</strong><br>
+          🕒 ${new Date(e.zeit).toLocaleString()}<br>
+          ${e.beschreibung}<br>
+          <div>Fahrzeuge:<br>${fahrzeugListe}</div><br>
+          <button class="action-button" onclick="zuweisenFahrzeug(${e.id})">Fahrzeug zuweisen</button>
+          <button class="action-button" onclick="abschliessen(${e.id})">Einsatz abschließen</button>
+          <div id="fahrzeugDropdownContainer-${e.id}" style="display:none;">
+            <select id="fahrzeugDropdown-${e.id}">
+              <option value="">Kein Fahrzeug ausgewählt</option>
+            </select>
+            <button class="action-button" onclick="fahrzeugHinzufuegen(${e.id})">Fahrzeug zuweisen</button>
+          </div>
+        `;
+
+        container.appendChild(div);
+
+        const dropdown = document.getElementById(`fahrzeugDropdown-${e.id}`);
+        if (dropdown) {
+          fahrzeugeDaten.forEach(f => {
+            const used = einsaetze.some(e2 => e2.fahrzeuge.some(fz => fz.name === f.name));
+            if (!used) {
+              const option = document.createElement("option");
+              option.value = f.name;
+              option.textContent = f.name;
+              dropdown.appendChild(option);
+            }
+          });
+        }
+      });
+    }
+
+    function zuweisenFahrzeug(einsatzId) {
+      const container = document.getElementById(`fahrzeugDropdownContainer-${einsatzId}`);
+      container.style.display = container.style.display === "block" ? "none" : "block";
+    }
+
+    function fahrzeugHinzufuegen(einsatzId) {
+      const selected = document.getElementById(`fahrzeugDropdown-${einsatzId}`).value;
+      if (selected) {
+        const einsatz = einsaetze.find(e => e.id === einsatzId);
+        if (einsatz.fahrzeuge.some(f => f.name === selected)) {
+          alert(`Das Fahrzeug '${selected}' ist bereits zugewiesen.`);
+          return;
+        }
+        einsatz.fahrzeuge.push({ name: selected, status: "Zugewiesen" });
+        save();
+        renderEinsaetze();
+        renderFahrzeugCheckboxen();
+        showSuccess(`Fahrzeug '${selected}' wurde zugewiesen.`);
+      } else {
+        alert("Bitte ein Fahrzeug auswählen.");
+      }
+    }
+
+    function fahrzeugAbziehen(einsatzId, fahrzeugName) {
+      const einsatz = einsaetze.find(e => e.id === einsatzId);
+      if (einsatz) {
+        einsatz.fahrzeuge = einsatz.fahrzeuge.filter(f => f.name !== fahrzeugName);
+        save();
+        renderEinsaetze();
+        renderFahrzeugCheckboxen();
+        showSuccess(`Fahrzeug '${fahrzeugName}' wurde abgezogen.`);
+      }
+    }
+
+    function abschliessen(id) {
+      if (!confirm("Möchtest du diesen Einsatz wirklich abschließen?")) return;
+      const index = einsaetze.findIndex(e => e.id === id);
+      if (index > -1) {
+        const [einsatz] = einsaetze.splice(index, 1);
+        historie.push(einsatz);
+        save();
+        renderEinsaetze();
+        renderFahrzeugCheckboxen();
+        showSuccess("Einsatz wurde abgeschlossen.");
+      }
+    }
+
+    document.getElementById("einsatzErstellenBtn").addEventListener("click", addEinsatz);
+
+    window.onload = () => {
+      renderEinsaetze();
+      renderFahrzeugCheckboxen();
+    };
+  </script>
+</body>
+</html>
