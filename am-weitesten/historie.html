@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Einsatzhistorie – Jugendfeuerwehr Einsingen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1em;
+      background: #f0f0f0;
+      margin: 0;
+    }
+
+    header {
+      background-color: #cc1414;
+      color: white;
+      padding: 1em;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    nav {
+      margin-top: 0.5em;
+    }
+
+    nav a {
+      color: white;
+      margin: 0 10px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 6px 12px;
+      background-color: #ff6600;
+      border-radius: 4px;
+    }
+
+    nav a:hover {
+      background-color: #e65c00;
+    }
+
+    .message {
+      background: #d0f0d0;
+      padding: 10px;
+      margin: 1em auto;
+      text-align: center;
+      color: green;
+      display: none;
+      max-width: 800px;
+      border-radius: 5px;
+    }
+
+    .einsatz {
+      background: white;
+      border-left: 5px solid #999;
+      margin: 1em auto;
+      padding: 1em;
+      border-radius: 8px;
+      max-width: 800px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .einsatz ul {
+      padding-left: 20px;
+    }
+
+    .einsatz button {
+      margin-top: 0.5em;
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+      margin-right: 10px;
+    }
+
+    .delete-button {
+      background-color: #fc0606;
+      color: white;
+    }
+
+    .delete-button:hover {
+      background-color: #d00404;
+    }
+
+    .restore-button {
+      background-color: #ff6600;
+      color: white;
+    }
+
+    .restore-button:hover {
+      background-color: #e65c00;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📜 Einsatzhistorie</h1>
+    <nav>
+      <a href="einsatz.html">Aktuelle Einsätze</a>
+    </nav>
+  </header>
+
+  <div class="message" id="successMessage"></div>
+  <div id="historieContainer"></div>
+
+  <script>
+    const historie = JSON.parse(localStorage.getItem("historie")) || [];
+    const einsaetze = JSON.parse(localStorage.getItem("einsaetze")) || [];
+
+    function saveAll() {
+      localStorage.setItem("historie", JSON.stringify(historie));
+      localStorage.setItem("einsaetze", JSON.stringify(einsaetze));
+    }
+
+    function showSuccess(msg) {
+      const m = document.getElementById("successMessage");
+      m.textContent = msg;
+      m.style.display = "block";
+      setTimeout(() => m.style.display = "none", 3000);
+    }
+
+    function wiederherstellen(id) {
+      const index = historie.findIndex(e => e.id === id);
+      if (index > -1) {
+        einsaetze.push(historie[index]);
+        historie.splice(index, 1);
+        saveAll();
+        renderHistorie();
+        showSuccess("Einsatz wurde wiederhergestellt.");
+      }
+    }
+
+    function loeschen(id) {
+      if (!confirm("Möchtest du diesen Einsatz wirklich löschen?")) return;
+      const index = historie.findIndex(e => e.id === id);
+      if (index > -1) {
+        historie.splice(index, 1);
+        saveAll();
+        renderHistorie();
+        showSuccess("Einsatz wurde gelöscht.");
+      }
+    }
+
+    function renderHistorie() {
+      const container = document.getElementById("historieContainer");
+      container.innerHTML = "";
+
+      if (historie.length === 0) {
+        container.innerHTML = "<p style='text-align:center;'>Keine abgeschlossenen Einsätze.</p>";
+        return;
+      }
+
+      historie.forEach(e => {
+        const div = document.createElement("div");
+        div.className = "einsatz";
+
+        const fahrzeuge = e.fahrzeuge.length
+          ? e.fahrzeuge.map(f => `<li>${f}</li>`).join("")
+          : "<li>Keine Fahrzeuge</li>";
+
+        div.innerHTML = `
+          <strong>${e.ort}</strong> – ${new Date(e.zeit).toLocaleString()}<br>
+          ${e.beschreibung}<br>
+          <em>Fahrzeuge:</em><ul>${fahrzeuge}</ul>
+          <button class="restore-button" onclick="wiederherstellen(${e.id})">Wiederherstellen</button>
+          <button class="delete-button" onclick="loeschen(${e.id})"> Löschen</button>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    renderHistorie();
+  </script>
+</body>
+</html>
