@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fahrzeugverwaltung</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .fahrzeug-form {
+            background: white;
+            padding: 1em;
+            border-radius: 8px;
+            margin-bottom: 1em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .fahrzeug-liste {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(131, 3, 3, 0.1);
+        }
+
+        th, td {
+            padding: 0.8em;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #ff6600;
+            color: white;
+        }
+
+        .delete-button {
+            background-color: #fc060f;
+            color: white;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .delete-button:hover {
+            background-color: #990000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🚗 Fahrzeugverwaltung</h1>
+        <nav>
+            <a href="index.html" class="header-button">🏠 Startseite</a>
+            <a href="einsatz.html" class="header-button">🚨 Einsätze</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="fahrzeug-form">
+            <h2>Neues Fahrzeug hinzufügen</h2>
+            <input type="text" id="fahrzeugName" placeholder="Fahrzeugname (z.B. LF 10)">
+            <input type="text" id="fahrzeugTyp" placeholder="Fahrzeugtyp (z.B. Löschgruppenfahrzeug)">
+            <button class="header-button" onclick="fahrzeugHinzufuegen()">Hinzufügen</button>
+        </section>
+
+        <section class="fahrzeug-liste">
+            <h2>Fahrzeugliste</h2>
+            <table id="fahrzeugTabelle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Typ</th>
+                        <th>Aktion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Fahrzeugzeilen werden hier hinzugefügt -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        // ===== DATENLADUNG UND SPEICHERN =====
+        let fahrzeugeDaten = JSON.parse(localStorage.getItem("fahrzeugeDaten")) || [];
+
+        // Speichern der Daten im LocalStorage
+        function saveData() {
+            console.log("Speichere Daten:", fahrzeugeDaten); // Debugging-Ausgabe
+            localStorage.setItem("fahrzeugeDaten", JSON.stringify(fahrzeugeDaten));
+        }
+
+        // ===== FAHRZEUGVERWALTUNG =====
+        function fahrzeugHinzufuegen() {
+            const name = document.getElementById('fahrzeugName').value.trim();
+            const typ = document.getElementById('fahrzeugTyp').value.trim();
+
+            if (!name || !typ) {
+                alert('Bitte Fahrzeugname und -typ eingeben.');
+                return;
+            }
+
+            // Neues Fahrzeug in das Array einfügen
+            fahrzeugeDaten.push({ name, typ });
+            document.getElementById('fahrzeugName').value = '';  // Eingabefeld zurücksetzen
+            document.getElementById('fahrzeugTyp').value = '';  // Eingabefeld zurücksetzen
+
+            saveData();  // Daten im LocalStorage speichern
+            renderFahrzeugListe();  // Fahrzeugliste neu rendern
+        }
+
+        function renderFahrzeugListe() {
+            const tabelle = document.getElementById('fahrzeugTabelle').querySelector('tbody');
+            tabelle.innerHTML = ''; // Tabelle zurücksetzen
+
+            // Fahrzeuge aus fahrzeugeDaten durchlaufen und anzeigen
+            fahrzeugeDaten.forEach((f, index) => {
+                const neueZeile = tabelle.insertRow();
+                const zelleName = neueZeile.insertCell(0);
+                const zelleTyp = neueZeile.insertCell(1);
+                const zelleAktion = neueZeile.insertCell(2);
+
+                zelleName.textContent = f.name;
+                zelleTyp.textContent = f.typ;
+                zelleAktion.innerHTML = `<button class="delete-button" onclick="diesesFahrzeugLoeschen(${index})">Löschen</button>`;
+            });
+        }
+
+        function diesesFahrzeugLoeschen(index) {
+            if (confirm(`Möchtest du dieses Fahrzeug wirklich löschen?`)) {
+                fahrzeugeDaten.splice(index, 1);  // Fahrzeug aus dem Array löschen
+                saveData();  // Daten im LocalStorage speichern
+                renderFahrzeugListe();  // Fahrzeugliste neu rendern
+            }
+        }
+
+        // ===== INIT =====
+        window.onload = () => {
+            // Fahrzeugliste rendern, wenn die Seite geladen wird
+            renderFahrzeugListe();
+        };
+    </script>
+</body>
+</html>
