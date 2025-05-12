@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Statusmeldung - Fahrzeug</title>
+    <link rel="stylesheet" href="../style/status.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>🚒 Fahrzeug-Statusmeldung</h1>
+
+        <div class="section">
+            <label for="fahrzeugSelect">Fahrzeug auswählen:</label>
+            <select id="fahrzeugSelect">
+                <option value="" disabled selected>Bitte Fahrzeug wählen</option>
+            </select>
+        </div>
+
+        <div id="einsatzInfo" class="section hidden">
+            <h2>🚨 Aktueller Einsatz</h2>
+            <p id="einsatzText">Kein Einsatz zugewiesen</p>
+        </div>
+
+        <div id="statusButtons" class="section hidden">
+            <h2>Status setzen</h2>
+            <div class="status-buttons">
+                <button class="status-btn status-1" data-status="1">1️ Einsatzbereit über Funk</button>
+                <button class="status-btn status-2" data-status="2">2️ Auf Wache bereit</button>
+                <button class="status-btn status-3" data-status="3">3️ Auftrag übernommen</button>
+                <button class="status-btn status-4" data-status="4">4️ Am Einsatzort</button>
+                <button class="status-btn status-5" data-status="5">5️ Sprechwunsch</button>
+                <button class="status-btn status-6" data-status="6">6️ Nicht einsatzbereit</button>
+            </div>
+        </div>
+
+        <!-- Button zum Öffnen der Karte und Navigieren zum Einsatzort -->
+        <div class="navigate-btn-container">
+            <button id="navigateBtn" class="navigate-btn">🗺️ Zum Einsatzort navigieren</button>
+        </div>
+    </div>
+
+    <script src="../script/status.js"></script>
+
+    <!-- JavaScript zum Navigieren zur Karte basierend auf dem aktuellen Standort -->
+    <script>
+        // Funktion zur Verwendung der Geolocation API
+        function getCurrentLocationAndNavigate() {
+            if (navigator.geolocation) {
+                // Aktuellen Standort des Nutzers abrufen
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    const einsatzText = document.getElementById("einsatzText").textContent;
+                    const einsatzDetails = einsatzText.split(" – ");
+                    if (einsatzDetails.length > 1) {
+                        const [beschreibung, strasse, hausnummer, ort] = einsatzDetails;
+                        const address = `${strasse} ${hausnummer}, ${ort}`;
+
+                        // Google Maps URL mit den Koordinaten und der Adresse
+                        const googleMapsUrl = `https://www.google.com/maps/dir/${lat},${lon}/${encodeURIComponent(address)}`;
+                        
+                        // Google Maps im neuen Tab öffnen, der die Navigation startet
+                        window.open(googleMapsUrl, "_blank");
+                    } else {
+                        alert("Kein Einsatzort verfügbar.");
+                    }
+                }, (error) => {
+                    alert("Standort konnte nicht ermittelt werden.");
+                });
+            } else {
+                alert("Geolocation wird in diesem Browser nicht unterstützt.");
+            }
+        }
+
+        // Event Listener für den "Zum Einsatzort navigieren"-Button
+        document.getElementById("navigateBtn").addEventListener("click", getCurrentLocationAndNavigate);
+    </script>
+</body>
+</html>

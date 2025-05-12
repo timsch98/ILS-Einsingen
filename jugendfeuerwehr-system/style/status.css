@@ -1,0 +1,110 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1b1b1b;
+    color: white;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 600px;
+    margin: auto;
+    background: #2c2c2c;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px #ff4444;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #ff4444;
+}
+
+.section {
+    margin-top: 20px;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.1em;
+    border-radius: 8px;
+    border: none;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Neue Styles für Statusbuttons */
+.status-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.status-btn {
+    padding: 16px;
+    font-size: 1.05em;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    color: white;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Hover-Effekt */
+.status-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+}
+
+/* Individuelle Farben */
+.status-1 { background-color: #4caf50; color: black; }   /* Grün – Einsatzbereit über Funk */
+.status-2 { background-color: #4caf50; color: black; }   /* Blau – Auf Wache */
+.status-3 { background-color: #00aaff; color: black; }   /* Gelb – Übernommen */
+.status-4 { background-color: #00aaff; color: black; }   /* Orange – Einsatzort */
+.status-5 { background-color: #eef436; color: black; }   /* Rot – Sprechwunsch */
+.status-6 { background-color: #f44336; color: black; }   /* Violett – Nicht einsatzbereit */
+
+/* Fokus sichtbar machen */
+.status-btn:focus {
+    outline: 2px solid #fff;
+    outline-offset: -4px;
+}
+
+/* Aktiver Status-Button (visuell hervorgehoben) */
+.status-btn.active {
+    outline: 3px solid #ffffff;
+    box-shadow: 0 0 15px 4px #ffffff;
+    transform: scale(1.03);
+}
+
+/* Styling für den Button zum Navigieren */
+.navigate-btn-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.navigate-btn {
+    padding: 12px 20px;
+    font-size: 1.1em;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.navigate-btn:hover {
+    background-color: #45a049;
+}

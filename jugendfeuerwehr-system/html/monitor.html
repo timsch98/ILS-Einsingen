@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Alarm Monitor</title>
+    <link rel="stylesheet" href="../style/style-monitor.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body class="monitor">
+    <h1>📟 Alarm Monitor</h1>
+    <button id="startButton">Monitor starten</button>
+    <div id="monitorEinsaetze" style="display: none;"></div>
+    <audio id="gongAudio" src="../gong.mp3" preload="auto"></audio>
+
+    <!-- Leaflet JS kommt VOR deinem Skript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../script/script-monitor.js"></script>
+</body>
+</html>

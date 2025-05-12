@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Einsätze</title>
+    <link rel="stylesheet" href="../style/style-einsatz.css">
+</head>
+<body>
+    <header>
+        <h1>🚨 Einsätze</h1>
+        <nav>
+            <a href="index.html">🏠 Startseite</a>
+            <a href="historie.html">📜 Historie</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="message" id="successMessage">Einsatz wurde erfolgreich erstellt.</div>
+        <div class="einsatz-form">
+            <h2>Neuen Einsatz erstellen</h2>
+            <div class="form-decoration">
+                <input type="text" id="einsatzOrt" placeholder="Ort" required />
+                <input type="text" id="einsatzStraße" placeholder="Straße" required />
+                <input type="text" id="einsatzHausnummer" placeholder="Hausnummer" required />
+                <textarea id="einsatzBeschreibung" placeholder="Beschreibung des Einsatzes" required></textarea>
+            </div>
+
+
+                <h4>Fahrzeug hinzufügen</h4>
+                <select id="fahrzeugDropdown">
+                    <option value="">Fahrzeug auswählen</option>
+                </select>
+                
+            <div id="fahrzeugList"></div>
+            <button class="full-width" id="einsatzErstellenBtn">Einsatz erstellen</button>
+        </div>
+
+        <div class="einsatzliste">
+            <h2>Aktuelle Einsätze</h2>
+            <div id="einsaetze"></div>
+        </div>
+        
+</div>
+
+    </main>
+    <script src="../script/script-einsatz.js"></script>
+</body>
+</html>
