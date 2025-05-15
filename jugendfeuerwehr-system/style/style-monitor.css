@@ -61,3 +61,45 @@ h1 {
 @keyframes blink {
     50% { border-color: transparent; }
 }
+
+/* Durchsagen-Style */
+#durchsagenListeMonitor {
+    width: 100%;
+    max-width: 1200px;
+    margin-top: 2em;
+    padding: 1em;
+    box-sizing: border-box;
+}
+
+.durchsageMonitor {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #444;
+    color: white;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    font-size: 1.2em;
+    animation: fadeIn 1s ease-out;
+}
+
+.durchsageMonitor button {
+    background-color: #f1c40f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5em 1em;
+    cursor: pointer;
+    font-size: 1.2em;
+}
+
+.durchsageMonitor button:hover {
+    background-color: #e67e22;
+}
+
+/* Animation für die Durchsage-Elemente */
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}

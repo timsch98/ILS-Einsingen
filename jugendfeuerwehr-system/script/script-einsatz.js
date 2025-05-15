@@ -3,6 +3,7 @@ let fahrzeugeDaten = JSON.parse(localStorage.getItem("fahrzeugeDaten")) || [];
 let aktuelleFahrzeuge = [];
 let historie = JSON.parse(localStorage.getItem("historie")) || [];
 let nachrueckFahrzeuge = {};
+let koordinaten = null;
 
 function save() {
     localStorage.setItem("einsaetze", JSON.stringify(einsaetze));
@@ -23,9 +24,17 @@ function addEinsatz() {
     const hausnummer = document.getElementById("einsatzHausnummer").value.trim();
     const beschreibung = document.getElementById("einsatzBeschreibung").value.trim();
 
-    if (!ort || !straße || !hausnummer || !beschreibung) {
-        alert("Bitte alle Felder ausfüllen.");
+    if (!beschreibung) {
+        alert("Bitte eine Beschreibung angeben.");
         return;
+    }
+
+    // Entweder Koordinaten oder vollständige Adresse erforderlich
+    if (!koordinaten) {
+        if (!ort || !straße || !hausnummer) {
+            alert("Bitte entweder eine Adresse oder eine Position auf der Karte angeben.");
+            return;
+        }
     }
 
     const einsatz = {
@@ -35,8 +44,12 @@ function addEinsatz() {
         hausnummer,
         zeit: new Date().toISOString(),
         beschreibung,
-        fahrzeuge: [...aktuelleFahrzeuge],
+        fahrzeuge: [...aktuelleFahrzeuge]
     };
+
+    if (koordinaten) {
+        einsatz.koordinaten = koordinaten;
+    }
 
     einsaetze.push(einsatz);
     save();
@@ -48,6 +61,8 @@ function addEinsatz() {
     document.getElementById("einsatzHausnummer").value = "";
     document.getElementById("einsatzBeschreibung").value = "";
     aktuelleFahrzeuge = [];
+    koordinaten = null;
+    updateCoordsDisplay();
     renderFahrzeugList();
     renderFahrzeugDropdown();
 }
@@ -66,10 +81,7 @@ function renderEinsaetze() {
         if (e.fahrzeuge.length > 0) {
             fahrzeugListeHTML += '<ul>';
             e.fahrzeuge.forEach(fahrzeug => {
-                // Hole den Status aus dem LocalStorage
                 const status = localStorage.getItem(`status_${fahrzeug.name}`);
-
-                // Überprüfen, ob ein Wert existiert, und wenn ja, dann zeige diesen Wert an
                 fahrzeugListeHTML += `
                     <li>
                         <span><strong>${fahrzeug.name}</strong> – <em>Status: ${status || 'Kein Status'}</em></span>
@@ -89,19 +101,20 @@ function renderEinsaetze() {
             ? `<div id="nachrueckListe-${e.id}" class="nachrueck-liste">
                     <h5>Vorgemerkte Fahrzeuge:</h5>
                     <ul>
-                        ${nachrueckFahrzeuge[e.id].map(f => `  
+                        ${nachrueckFahrzeuge[e.id].map(f => `
                             <li>
                                 ${f.name}
                                 <button onclick="entferneVorgemerktesFahrzeug(${e.id}, '${f.name}')">Löschen</button>
                             </li>
                         `).join("")}
                     </ul>
-               </div>`
+                </div>`
             : '';
 
         div.innerHTML = `
-            <h3>${e.ort}, ${e.strasse} ${e.hausnummer}</h3>
+            <h3>${e.ort || 'Ort unbekannt'}, ${e.strasse || ''} ${e.hausnummer || ''}</h3>
             <p>${e.beschreibung}</p>
+            <p><strong>Koordinaten:</strong> ${e.koordinaten ? e.koordinaten.join(", ") : "Keine Angabe"}</p>
             <p><strong>Erstellt am:</strong> ${new Date(e.zeit).toLocaleString()}</p>
             ${fahrzeugListeHTML}
             <div class="nachrueck-container">
@@ -161,6 +174,7 @@ function istFahrzeugVerfuegbar(name) {
 }
 
 function renderFahrzeugDropdown() {
+    const fahrzeugDropdown = document.getElementById("fahrzeugDropdown");
     fahrzeugDropdown.innerHTML = '<option value="">Fahrzeug auswählen</option>';
     fahrzeugeDaten.forEach(f => {
         if (istFahrzeugVerfuegbar(f.name)) {
@@ -203,9 +217,7 @@ function abziehenFahrzeug(fahrzeugName) {
     showSuccess(`${fahrzeugName} wurde abgezogen.`);
 }
 
-const fahrzeugDropdown = document.getElementById("fahrzeugDropdown");
-
-fahrzeugDropdown.addEventListener("change", () => {
+document.getElementById("fahrzeugDropdown").addEventListener("change", () => {
     const selectedName = fahrzeugDropdown.value;
     if (!selectedName) return;
 
@@ -236,7 +248,6 @@ function fahrzeugHinzufuegen(einsatzId) {
     }
 }
 
-// Globaler Event Listener für Nachrück-Dropdowns
 document.addEventListener("change", function (e) {
     if (e.target && e.target.id.startsWith("nachrueckDropdown-")) {
         const einsatzId = parseInt(e.target.id.split("-")[1]);
@@ -253,14 +264,41 @@ document.addEventListener("change", function (e) {
     }
 });
 
-// Regelmäßig den LocalStorage speichern und die Einsätze rendern
 setInterval(() => {
-    save(); // Speichert den aktuellen Stand der Einsätze im localStorage
-    renderEinsaetze(); // Rendert die Einsätze mit den aktuellen Fahrzeug-Status
-}, 5000); // Alle 5 Sekunden
+    save();
+}, 10000);
 
 // Initialisierung
 document.getElementById("einsatzErstellenBtn").addEventListener("click", addEinsatz);
 renderEinsaetze();
 renderFahrzeugList();
 renderFahrzeugDropdown();
+
+// ====================
+// Leaflet-Karte
+// ====================
+const map = L.map('map').setView([48.35327, 9.89901], 15);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap-Mitwirkende'
+}).addTo(map);
+
+const marker = L.marker([51.1657, 10.4515], {
+    draggable: true
+}).addTo(map);
+
+map.on('click', function (e) {
+    marker.setLatLng(e.latlng);
+    koordinaten = [e.latlng.lat, e.latlng.lng];
+    updateCoordsDisplay();
+});
+
+marker.on('dragend', function () {
+    koordinaten = [marker.getLatLng().lat, marker.getLatLng().lng];
+    updateCoordsDisplay();
+});
+
+function updateCoordsDisplay() {
+    const display = document.getElementById("coordsDisplay");
+    display.textContent = koordinaten ? `${koordinaten[0].toFixed(5)}, ${koordinaten[1].toFixed(5)}` : "Keine Position gewählt";
+}

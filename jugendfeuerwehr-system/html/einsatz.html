@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Einsätze</title>
     <link rel="stylesheet" href="../style/style-einsatz.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 </head>
 <body>
     <header>
@@ -12,6 +14,7 @@
         <nav>
             <a href="index.html">🏠 Startseite</a>
             <a href="historie.html">📜 Historie</a>
+            <a href="durchsage.html">🔊 Durchsage</a>
         </nav>
     </header>
 
@@ -26,13 +29,17 @@
                 <textarea id="einsatzBeschreibung" placeholder="Beschreibung des Einsatzes" required></textarea>
             </div>
 
+            <h4>Fahrzeug hinzufügen</h4>
+            <select id="fahrzeugDropdown">
+                <option value="">Fahrzeug auswählen</option>
+            </select>
 
-                <h4>Fahrzeug hinzufügen</h4>
-                <select id="fahrzeugDropdown">
-                    <option value="">Fahrzeug auswählen</option>
-                </select>
-                
             <div id="fahrzeugList"></div>
+
+            <h4>Ort auf Karte wählen</h4>
+            <div id="map" style="height: 400px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px;"></div>
+            <p>📍 <strong>Koordinaten:</strong> <span id="coordsDisplay">Keine Position gewählt</span></p>
+
             <button class="full-width" id="einsatzErstellenBtn">Einsatz erstellen</button>
         </div>
 
@@ -40,10 +47,8 @@
             <h2>Aktuelle Einsätze</h2>
             <div id="einsaetze"></div>
         </div>
-        
-</div>
-
     </main>
+
     <script src="../script/script-einsatz.js"></script>
 </body>
 </html>

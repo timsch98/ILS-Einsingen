@@ -8,11 +8,19 @@
 </head>
 <body class="monitor">
     <h1>📟 Alarm Monitor</h1>
+    
+    <!-- Start-Button für den Monitor -->
     <button id="startButton">Monitor starten</button>
+
+    <!-- Monitor für die aktiven Einsätze -->
     <div id="monitorEinsaetze" style="display: none;"></div>
+
+    <!-- Durchsagen-Anzeige -->
+    <div id="durchsagenListeMonitor"></div>
+
+    <!-- Audio-Datei für Gong -->
     <audio id="gongAudio" src="../gong.mp3" preload="auto"></audio>
 
-    <!-- Leaflet JS kommt VOR deinem Skript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="../script/script-monitor.js"></script>
 </body>

@@ -33,7 +33,11 @@ function findeEinsatz(fahrzeugName) {
         .find(e => e.fahrzeuge?.some(f => f.name === fahrzeugName));
 
     if (zugewiesenerEinsatz) {
-        return `${zugewiesenerEinsatz.beschreibung} – ${zugewiesenerEinsatz.strasse} ${zugewiesenerEinsatz.hausnummer}, ${zugewiesenerEinsatz.ort}`;
+        const ortAnzeigen = zugewiesenerEinsatz.strasse && zugewiesenerEinsatz.hausnummer && zugewiesenerEinsatz.ort;
+        const ortText = ortAnzeigen
+            ? `${zugewiesenerEinsatz.strasse} ${zugewiesenerEinsatz.hausnummer}, ${zugewiesenerEinsatz.ort}`
+            : "📍 Einsatzort per Koordinaten";
+        return `${zugewiesenerEinsatz.beschreibung} – ${ortText}`;
     }
     return "Kein Einsatz zugewiesen";
 }
@@ -47,7 +51,6 @@ fahrzeugSelect.addEventListener("change", () => {
     einsatzInfo.classList.remove("hidden");
     statusButtons.classList.remove("hidden");
 
-    // Aktuellen Status aus Storage holen und Button aktiv setzen
     const gespeicherterStatus = localStorage.getItem(`status_${fahrzeug}`);
     if (gespeicherterStatus) {
         markiereAktivenStatus(gespeicherterStatus);
@@ -73,55 +76,54 @@ document.querySelectorAll("#statusButtons button").forEach(button => {
         const statusNummer = button.dataset.status;
         const statusText = statusTexte[statusNummer];
 
-        // Speichern
         localStorage.setItem(`status_${fahrzeug}`, statusText);
-
-        // Aktiven Button markieren
         markiereAktivenStatus(statusText);
     });
 });
 
-// ===== Funktion für Standort und Navigation =====
+// ===== Navigation mit Priorität auf Koordinaten =====
 function getCurrentLocationAndNavigate() {
-    if (navigator.geolocation) {
-        // Aktuellen Standort des Nutzers abrufen
-        navigator.geolocation.getCurrentPosition((position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-
-            const einsatzTextContent = einsatzText.textContent;
-            const einsatzDetails = einsatzTextContent.split(" – ");
-
-            if (einsatzDetails.length > 1) {
-                // Die Adresse wird aufgeteilt und auf Vollständigkeit überprüft
-                const [beschreibung, adresse] = einsatzDetails;
-                const addressParts = adresse.split(", ");
-
-                // Sicherstellen, dass Straße, Hausnummer und Ort vorhanden sind
-                if (addressParts.length === 2) {
-                    const [strasseHausnummer, ort] = addressParts;
-                    const address = `${strasseHausnummer}, ${ort}`;
-
-                    // Google Maps URL mit den Koordinaten und der vollständigen Adresse
-                    const googleMapsUrl = `https://www.google.com/maps/dir/${lat},${lon}/${encodeURIComponent(address)}`;
-                    
-                    // Google Maps im neuen Tab öffnen, der die Navigation startet
-                    window.open(googleMapsUrl, "_blank");
-                } else {
-                    alert("Die Adresse des Einsatzortes ist unvollständig oder falsch formatiert.");
-                }
-            } else {
-                alert("Kein Einsatzort verfügbar.");
-            }
-        }, (error) => {
-            alert("Standort konnte nicht ermittelt werden.");
-        });
-    } else {
+    if (!navigator.geolocation) {
         alert("Geolocation wird in diesem Browser nicht unterstützt.");
+        return;
     }
+
+    navigator.geolocation.getCurrentPosition((position) => {
+        const userLat = position.coords.latitude;
+        const userLon = position.coords.longitude;
+
+        const fahrzeug = fahrzeugSelect.value;
+        const alleEinsaetze = JSON.parse(localStorage.getItem("einsaetze")) || [];
+        const einsatz = alleEinsaetze.find(e => e.fahrzeuge?.some(f => f.name === fahrzeug));
+
+        if (!einsatz) {
+            alert("Kein Einsatz für dieses Fahrzeug gefunden.");
+            return;
+        }
+
+        const hatKoordinaten = Array.isArray(einsatz.koordinaten) && einsatz.koordinaten.length === 2;
+        const adresseVollständig = einsatz.strasse && einsatz.hausnummer && einsatz.ort;
+
+        let zielUrl = "";
+
+        if (hatKoordinaten) {
+            const [zielLat, zielLon] = einsatz.koordinaten;
+            zielUrl = `https://www.google.com/maps/dir/${userLat},${userLon}/${zielLat},${zielLon}`;
+        } else if (adresseVollständig) {
+            const zielAdresse = `${einsatz.strasse} ${einsatz.hausnummer}, ${einsatz.ort}`;
+            zielUrl = `https://www.google.com/maps/dir/${userLat},${userLon}/${encodeURIComponent(zielAdresse)}`;
+        } else {
+            alert("Weder Adresse noch Koordinaten sind für diesen Einsatz vollständig.");
+            return;
+        }
+
+        window.open(zielUrl, "_blank");
+    }, () => {
+        alert("Standort konnte nicht ermittelt werden.");
+    });
 }
 
-// Event Listener für den "Zum Einsatzort navigieren"-Button
+// ===== Event Listener für Navigation =====
 document.getElementById("navigateBtn").addEventListener("click", getCurrentLocationAndNavigate);
 
 // ===== Initialisierung =====
