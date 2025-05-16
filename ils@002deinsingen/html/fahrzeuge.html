@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fahrzeugverwaltung</title>
+    <link rel="stylesheet" href="../style/styles.css">
+    <link rel="stylesheet" href="../style/style-fahrzeuge.css">
+</head>
+<body>
+
+    <header>
+        <h1>🚗 Fahrzeugverwaltung</h1>
+        <nav>
+            <a href="index.html" class="header-button">🏠 Startseite</a>
+            <a href="einsatz.html" class="header-button">🚨 Einsätze</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="fahrzeug-form">
+            <h2>Neues Fahrzeug hinzufügen</h2>
+            <input type="text" id="fahrzeugName" placeholder="Fahrzeugname (z.B. LF 10)">
+            <input type="text" id="fahrzeugTyp" placeholder="Fahrzeugtyp (z.B. Löschgruppenfahrzeug)">
+            <button class="header-button" onclick="fahrzeugHinzufuegen()">Hinzufügen</button>
+        </section>
+
+        <section class="fahrzeug-liste">
+            <h2>Fahrzeugliste</h2>
+            <table id="fahrzeugTabelle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Typ</th>
+                        <th>Aktion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Fahrzeugzeilen werden hier hinzugefügt -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <script src="../script/script-fahrzeuge.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Durchsagen</title>
+    <link rel="stylesheet" href="../style/durchsage.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<!-- Header mit Titel und Navigation -->
+<header>
+    <h1>🔊 Durchsage</h1>
+    <nav>
+        <a href="index.html" class="header-button">🏠 Startseite</a>
+        <a href="einsatz.html" class="header-button">🚨 Einsätze</a>
+    </nav>
+</header>
+
+<div class="container">
+    <div class="durchsage-form">
+        <input type="text" id="durchsageText" placeholder="Gib hier deine Durchsage ein...">
+        <button id="saveBtn" class="action-button">Speichern</button>
+        <button id="speakBtn" class="action-button">Jetzt durchsagen</button>
+    </div>
+
+    <h2 class="durchsage-liste-titel">Gespeicherte Durchsagen</h2>
+    <div id="durchsageListe"></div>
+</div>
+
+<script src="../script/durchsage.js"></script>
+</body>
+</html>

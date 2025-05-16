@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Einsätze</title>
+  <link rel="stylesheet" href="../style/style-einsatz.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"
+  />
+  <script
+    src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"
+    defer
+  ></script>
+</head>
+<body>
+  <header>
+    <h1>🚨 Einsätze</h1>
+    <nav>
+      <a href="index.html">🏠 Startseite</a>
+      <a href="historie.html">📜 Historie</a>
+      <a href="durchsage.html">🔊 Durchsage</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Erfolgsmeldung -->
+    <div class="message" id="successMessage" style="display:none;"></div>
+
+    <!-- Formular zur Erstellung eines neuen Einsatzes -->
+    <section class="einsatz-form">
+      <h2>Neuen Einsatz erstellen</h2>
+      <div class="form-group">
+        <input
+          type="text"
+          id="einsatzOrt"
+          placeholder="Ort"
+          autocomplete="off"
+          required
+        />
+        <input
+          type="text"
+          id="einsatzStrasse"
+          placeholder="Straße"
+          autocomplete="off"
+          required
+        />
+        <input
+          type="text"
+          id="einsatzHausnummer"
+          placeholder="Hausnummer"
+          autocomplete="off"
+          required
+        />
+        <textarea
+          id="einsatzBeschreibung"
+          placeholder="Beschreibung des Einsatzes"
+          rows="3"
+          required
+        ></textarea>
+      </div>
+
+      <h3>Fahrzeuge zum Einsatz hinzufügen</h3>
+      <select id="fahrzeugDropdown" aria-label="Fahrzeug auswählen">
+        <option value="">Fahrzeug auswählen</option>
+      </select>
+
+      <div id="fahrzeugList" aria-live="polite" style="margin-top: 10px;"></div>
+
+      <h3>Ort auf der Karte auswählen</h3>
+      <div
+        id="map"
+        style="height: 400px; margin: 15px 0; border: 1px solid #ccc; border-radius: 6px;"
+        aria-label="Karte zur Auswahl des Einsatzortes"
+      ></div>
+      <p>
+        📍 <strong>Koordinaten:</strong>
+        <span id="coordsDisplay">Keine Position gewählt</span>
+      </p>
+
+      <button id="einsatzErstellenBtn" class="full-width" type="button">
+        Einsatz erstellen
+      </button>
+    </section>
+
+    <!-- Liste der aktuellen Einsätze -->
+    <section class="einsatzliste" aria-live="polite">
+      <h2>Aktuelle Einsätze</h2>
+      <div id="einsaetze"></div>
+    </section>
+  </main>
+
+  <script src="../script/script-einsatz.js" defer></script>
+</body>
+</html>
